@@ -41,8 +41,10 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -51,7 +53,7 @@ import android.view.MenuItem;
 import com.mbientlab.metawear.MetaWearBleService;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.MetaWearBoard.ConnectionStateHandler;
-import com.mbientlab.metawear.starter.DeviceSetupActivityFragment.FragmentSettings;
+import com.mbientlab.metawear.starter.MainActivityFragment.FragmentSettings;
 
 public class DeviceSetupActivity extends AppCompatActivity implements ServiceConnection, FragmentSettings {
     public final static String EXTRA_BT_DEVICE= "com.mbientlab.metawear.starter.DeviceSetupActivity.EXTRA_BT_DEVICE";
@@ -113,7 +115,7 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
         @Override
         public void connected() {
             ((DialogFragment) getSupportFragmentManager().findFragmentByTag(RECONNECT_DIALOG_TAG)).dismiss();
-            ((DeviceSetupActivityFragment) getSupportFragmentManager().findFragmentById(R.id.device_setup_fragment)).reconnected();
+            /*((MainActivityFragment) getSupportFragmentManager().findFragmentById(R.id.device_setup_fragment)).reconnected();*/
         }
 
         @Override
@@ -147,6 +149,11 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
 
         btDevice= getIntent().getParcelableExtra(EXTRA_BT_DEVICE);
         getApplicationContext().bindService(new Intent(this, MetaWearBleService.class), this, BIND_AUTO_CREATE);
+
+        ViewPager viewPager = (ViewPager) findViewById(R.id.frag_container);
+        viewPager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.fixed_tabs);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
     @Override

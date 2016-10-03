@@ -39,8 +39,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,7 +64,7 @@ import java.util.List;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
+public class MainActivityFragment extends Fragment implements ServiceConnection {
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
     }
@@ -72,7 +74,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     private MultiChannelTemperature mcTempModule;
     private List<MultiChannelTemperature.Source> tempSources;
 
-    public DeviceSetupActivityFragment() {
+    public MainActivityFragment() {
     }
 
     @Override
@@ -99,7 +101,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setRetainInstance(true);
-        return inflater.inflate(R.layout.fragment_device_setup, container, false);
+        return inflater.inflate(R.layout.main_fragment, container, false);
     }
 
     @Override

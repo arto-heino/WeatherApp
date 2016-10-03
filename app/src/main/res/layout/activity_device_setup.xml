@@ -52,6 +52,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_device_setup" />
+    <include layout="@layout/fragment_device_setup" />
 
 </android.support.design.widget.CoordinatorLayout>
