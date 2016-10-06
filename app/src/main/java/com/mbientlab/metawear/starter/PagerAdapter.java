@@ -4,6 +4,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.google.android.gms.maps.SupportMapFragment;
+
 /**
  * Created by milosberka on 30.8.2016.
  */
@@ -11,10 +13,12 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 public class PagerAdapter extends FragmentPagerAdapter {
     final int PAGE_COUNT = 2;
-    private String tabTitles[] = new String[]{"Breeds", "Image"};
+    private String tabTitles[] = new String[]{"Monitor", "Map"};
+    FragmentManager fragm;
 
     public PagerAdapter(FragmentManager fm) {
         super(fm);
+        fragm = fm;
     }
 
     public int getCount() {
@@ -26,7 +30,9 @@ public class PagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return new MainActivityFragment();
             case 1:
-                return MapFragmentActivity.newInstance("", "");
+                //SupportMapFragment mapFragment = (SupportMapFragment) fragm.findFragmentById(R.id.map);
+                //return mapFragment;
+                return MapFragmentActivity.newInstance(fragm, "");
             default:
                 return new MainActivityFragment();
         }

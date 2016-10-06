@@ -108,7 +108,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.acc_start).setOnClickListener(new View.OnClickListener() {
+        /*view.findViewById(R.id.acc_start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mcTempModule.routeData()
@@ -130,13 +130,13 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
                     }
                 });
             }
-        });
-        view.findViewById(R.id.acc_stop).setOnClickListener(new View.OnClickListener() {
+        });*/
+        /*view.findViewById(R.id.acc_stop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mwBoard.removeRoutes();
             }
-        });
+        });*/
     }
 
 
