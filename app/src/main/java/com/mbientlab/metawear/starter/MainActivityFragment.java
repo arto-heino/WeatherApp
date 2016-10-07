@@ -37,7 +37,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -47,6 +49,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.mbientlab.metawear.AsyncOperation;
 import com.mbientlab.metawear.Message;
@@ -69,10 +72,13 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
         BluetoothDevice getBtDevice();
     }
 
-    private MetaWearBoard mwBoard= null;
+    private MetaWearBoard mwBoard = null;
     private FragmentSettings settings;
     private MultiChannelTemperature mcTempModule;
     private List<MultiChannelTemperature.Source> tempSources;
+    private static final int RESULT_SETTINGS = 1;
+    private SharedPreferences sharedPrefs;
+    private SharedPreferences.OnSharedPreferenceChangeListener listener;
 
     public MainActivityFragment() {
     }
@@ -81,12 +87,12 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Activity owner= getActivity();
+        Activity owner = getActivity();
         if (!(owner instanceof FragmentSettings)) {
             throw new ClassCastException("Owning activity must implement the FragmentSettings interface");
         }
 
-        settings= (FragmentSettings) owner;
+        settings = (FragmentSettings) owner;
         owner.getApplicationContext().bindService(new Intent(owner, MetaWearBleService.class), this, Context.BIND_AUTO_CREATE);
     }
 
@@ -108,6 +114,18 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+
+        showUserSettings();
+
+        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                showUserSettings();
+            }
+        };
+
+        sharedPrefs.registerOnSharedPreferenceChangeListener(listener);
+        
         /*view.findViewById(R.id.acc_start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -142,7 +160,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        mwBoard= ((MetaWearBleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
+        mwBoard = ((MetaWearBleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
         ready();
     }
 
@@ -154,7 +172,8 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     /**
      * Called when the app has reconnected to the board
      */
-    public void reconnected() { }
+    public void reconnected() {
+    }
 
     /**
      * Called when the mwBoard field is ready to be used
@@ -171,5 +190,23 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
             Snackbar.make(getActivity().findViewById(R.id.device_setup_fragment), e.getMessage(),
                     Snackbar.LENGTH_SHORT).show();
         }
+    }
+
+    public void showUserSettings() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n Google account: "
+                + sharedPrefs.getString("prefGoogle", "NULL"));
+
+        builder.append("\n Vibrate:"
+                + sharedPrefs.getBoolean("prefAlertVibrate", false));
+
+        builder.append("\n Sound:"
+                + sharedPrefs.getBoolean("prefAlertSound", false));
+
+        TextView settingsTextView = (TextView) getActivity().findViewById(R.id.textUserSettings);
+
+        settingsTextView.setText(builder.toString());
     }
 }

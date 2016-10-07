@@ -51,6 +51,11 @@
                 android:textAlignment="center"
                 android:id="@+id/temperatureView"
                 android:text="15°C"/>
+
+            <TextView
+                android:id="@+id/textUserSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </ScrollView>
 

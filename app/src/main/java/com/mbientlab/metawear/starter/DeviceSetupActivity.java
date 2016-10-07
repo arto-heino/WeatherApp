@@ -57,6 +57,7 @@ import com.mbientlab.metawear.starter.MainActivityFragment.FragmentSettings;
 
 public class DeviceSetupActivity extends AppCompatActivity implements ServiceConnection, FragmentSettings {
     public final static String EXTRA_BT_DEVICE= "com.mbientlab.metawear.starter.DeviceSetupActivity.EXTRA_BT_DEVICE";
+    private static final int RESULT_SETTINGS = 1;
 
     public static class ReconnectDialogFragment extends DialogFragment implements  ServiceConnection {
         private static final String KEY_BLUETOOTH_DEVICE = "com.mbientlab.metawear.starter.DeviceSetupActivity.ReconnectDialogFragment.KEY_BLUETOOTH_DEVICE";
@@ -170,6 +171,11 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
                 mwBoard.setConnectionStateHandler(null);
                 mwBoard.disconnect();
                 finish();
+                return true;
+
+            case R.id.action_settings:
+                Intent i = new Intent(this, UsersSettingsActivity.class);
+                startActivityForResult(i, RESULT_SETTINGS);
                 return true;
         }
 
