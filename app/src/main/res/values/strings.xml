@@ -48,5 +48,6 @@
     <string name="pref_google_name_summary">Set your Google account</string>
 
     <string name="pref_user_profile">User Profile</string>
-    <string name="pref_update_setting">Update Settings</string>
+    <string name="pref_update_setting">Update Alert Settings</string>
+    <string name="pref_update_setting2">Update Measurement Settings</string>
 </resources>

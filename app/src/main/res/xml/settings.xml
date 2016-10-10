@@ -13,8 +13,7 @@
             android:defaultValue="false"
             android:key="prefAlertVibrate"
             android:summary="@string/pref_alert_summary"
-            android:persistent="true"
-            android:title="@string/pref_alert_title" >
+            android:persistent="true" >
         </CheckBoxPreference>
         <CheckBoxPreference
             android:defaultValue="false"
@@ -23,12 +22,17 @@
             android:persistent="true" >
         </CheckBoxPreference>
 
-        <!--<SeekBarPreference
-            android:dependency="Main_Option"
-            android:key="customPref"
-            android:defaultValue="32"
-            android:title="Custom Preference" />-->
+    </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/pref_update_setting2" >
+        <com.mbientlab.metawear.starter.SeekBarPreference
+            android:defaultValue="30"
+            android:key="temp" />
+
+        <com.mbientlab.metawear.starter.SeekBarPreference
+            android:defaultValue="1"
+            android:key="tempFreq"
+        />
     </PreferenceCategory>
 
 </PreferenceScreen>
