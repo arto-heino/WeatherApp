@@ -76,7 +76,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     private FragmentSettings settings;
     private MultiChannelTemperature mcTempModule;
     private List<MultiChannelTemperature.Source> tempSources;
-    private static final int RESULT_SETTINGS = 1;
     private SharedPreferences sharedPrefs;
     private SharedPreferences.OnSharedPreferenceChangeListener listener;
 
@@ -204,6 +203,13 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
 
         builder.append("\n Sound:"
                 + sharedPrefs.getBoolean("prefAlertSound", false));
+
+        builder.append("\n Temperature Alert Limit:"
+                + sharedPrefs.getInt("tempAlert", 0));
+
+        builder.append("\n How often read temps:"
+                + sharedPrefs.getInt("tempFreq", 0));
+
 
         TextView settingsTextView = (TextView) getActivity().findViewById(R.id.textUserSettings);
 

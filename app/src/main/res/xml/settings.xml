@@ -25,14 +25,16 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_update_setting2" >
+
         <com.mbientlab.metawear.starter.SeekBarPreference
             android:defaultValue="30"
-            android:key="temp" />
+            android:key="tempAlert"
+            android:persistent="true"/>
 
         <com.mbientlab.metawear.starter.SeekBarPreference
             android:defaultValue="1"
             android:key="tempFreq"
-        />
+            android:persistent="true"/>
     </PreferenceCategory>
 
 </PreferenceScreen>
