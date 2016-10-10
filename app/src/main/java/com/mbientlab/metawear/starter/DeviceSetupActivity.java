@@ -49,6 +49,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.mbientlab.metawear.MetaWearBleService;
 import com.mbientlab.metawear.MetaWearBoard;
@@ -203,5 +204,17 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
     @Override
     public BluetoothDevice getBtDevice() {
         return btDevice;
+    }
+
+    public void setTempView() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView tempView = (TextView) findViewById(R.id.temperatureView);
+                tempView.setText(MainActivityFragment.sTemp);
+
+            }
+        });
+
     }
 }

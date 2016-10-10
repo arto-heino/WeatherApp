@@ -50,7 +50,7 @@
                 android:textSize="68sp"
                 android:textAlignment="center"
                 android:id="@+id/temperatureView"
-                android:text="15°C"/>
+                android:text="@string/temperature"/>
 
             <TextView
                 android:id="@+id/textUserSettings"

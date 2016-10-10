@@ -62,6 +62,8 @@ import com.mbientlab.metawear.module.MultiChannelTemperature.*;
 
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -79,6 +81,11 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     private static final int RESULT_SETTINGS = 1;
     private SharedPreferences sharedPrefs;
     private SharedPreferences.OnSharedPreferenceChangeListener listener;
+    private Timer timer;
+    private GetTemperature getTemp;
+    private TextView tempView;
+
+    protected static String sTemp;
 
     public MainActivityFragment() {
     }
@@ -94,6 +101,9 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
 
         settings = (FragmentSettings) owner;
         owner.getApplicationContext().bindService(new Intent(owner, MetaWearBleService.class), this, Context.BIND_AUTO_CREATE);
+
+        timer = new Timer();
+        getTemp = new GetTemperature();
     }
 
     @Override
@@ -113,7 +123,8 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        tempView = (TextView) getActivity().findViewById(R.id.temperatureView);
+        tempView.setText("jeje");
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
 
         showUserSettings();
@@ -182,6 +193,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
         try {
             mcTempModule = mwBoard.getModule(MultiChannelTemperature.class);
             tempSources = mcTempModule.getSources();
+            timer.schedule(getTemp, 1000, 2000);
 
             //ExtThermistor extTherm= (ExtThermistor) tempSources.get(MetaWearRChannel.EXT_THERMISTOR);
             //extTherm.configure((byte) 0, (byte) 1, false);
@@ -208,5 +220,40 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
         TextView settingsTextView = (TextView) getActivity().findViewById(R.id.textUserSettings);
 
         settingsTextView.setText(builder.toString());
+    }
+
+
+
+    public void setTempView() {
+        ((DeviceSetupActivity)getActivity()).setTempView();
+    }
+
+    private class GetTemperature extends TimerTask {
+        private String temp;
+        @Override
+        public void run() {
+            mcTempModule.routeData()
+                    .fromSource(tempSources.get(MultiChannelTemperature.MetaWearRChannel.NRF_DIE)).stream("temp_nrf_stream")
+                    .commit().onComplete(new AsyncOperation.CompletionHandler<RouteManager>() {
+
+                public void success(RouteManager result) {
+                    result.subscribe("temp_nrf_stream", new RouteManager.MessageHandler() {
+                        @Override
+                        public void process(Message msg) {
+
+                            Log.i("Temperature", String.format("%.3fC",
+                                    msg.getData(Float.class)));
+                            temp = String.format("%.3fC",
+                                    msg.getData(Float.class));
+                            sTemp = temp;
+                            setTempView();
+                        }
+                    });
+
+                    // Read temperature from the NRF soc chip
+                    mcTempModule.readTemperature(tempSources.get(MultiChannelTemperature.MetaWearRChannel.NRF_DIE));
+                }
+            });
+        }
     }
 }
