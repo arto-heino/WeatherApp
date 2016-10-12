@@ -50,4 +50,6 @@
     <string name="pref_user_profile">User Profile</string>
     <string name="pref_update_setting">Update Alert Settings</string>
     <string name="pref_update_setting2">Update Measurement Settings</string>
+    <string name="pref_update_setting3">Update Frequency Settings</string>
+
 </resources>
