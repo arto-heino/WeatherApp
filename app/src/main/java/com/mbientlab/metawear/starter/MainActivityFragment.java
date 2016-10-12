@@ -210,7 +210,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
         builder.append("\n How often read temps:"
                 + sharedPrefs.getInt("tempFreq", 0));
 
-
         TextView settingsTextView = (TextView) getActivity().findViewById(R.id.textUserSettings);
 
         settingsTextView.setText(builder.toString());
