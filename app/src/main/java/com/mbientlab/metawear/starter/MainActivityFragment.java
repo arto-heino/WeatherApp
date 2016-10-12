@@ -39,8 +39,12 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -94,7 +98,9 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
     private Location mLastLocation;
     private String mLatitudeText;
     private String mLongitudeText;
-    private Float temperature;
+    private Float tempLimit, temperature;
+    private Integer timeLimit;
+    private Boolean alert, vibrate;
     protected static String sTemp;
 
     private static final String allTemp = "allTemp.text";
@@ -240,7 +246,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
         try {
             mcTempModule = mwBoard.getModule(MultiChannelTemperature.class);
             tempSources = mcTempModule.getSources();
-            timer.schedule(getTemp, 1000, 10000);
+            timer.schedule(getTemp, 1000, timeLimit);
 
             //ExtThermistor extTherm= (ExtThermistor) tempSources.get(MetaWearRChannel.EXT_THERMISTOR);
             //extTherm.configure((byte) 0, (byte) 1, false);
@@ -253,20 +259,11 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
 
     public void showUserSettings() {
 
-        StringBuilder builder = new StringBuilder();
+        tempLimit = sharedPrefs.getFloat("", 30) - 30;
+        timeLimit = sharedPrefs.getInt("", 1) * 1000;
+        vibrate = sharedPrefs.getBoolean("prefAlertVibrate", false);
+        alert = sharedPrefs.getBoolean("prefAlertSound", false);
 
-        builder.append("\n Google account: "
-                + sharedPrefs.getString("prefGoogle", "NULL"));
-
-        builder.append("\n Vibrate:"
-                + sharedPrefs.getBoolean("prefAlertVibrate", false));
-
-        builder.append("\n Sound:"
-                + sharedPrefs.getBoolean("prefAlertSound", false));
-
-        TextView settingsTextView = (TextView) getActivity().findViewById(R.id.textUserSettings);
-
-        settingsTextView.setText(builder.toString());
     }
 
     public void temperatureBelow() {
@@ -313,8 +310,26 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
                             sTemp = temp;
                             setTempView();
                             temperature = msg.getData(Float.class);
+
                             TempMeasured tempMeasured = new TempMeasured();
                             tempMeasured.execute();
+
+                            if(temperature < tempLimit){
+                                temperatureBelow();
+                                if(vibrate){
+                                    Vibrator vib = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+                                    vib.vibrate(900);
+                                }
+                                if(alert){
+                                    try {
+                                        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                                        Ringtone r = RingtoneManager.getRingtone(getContext(), notification);
+                                        r.play();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
                         }
                     });
 
@@ -339,9 +354,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
                 oSw.close();
                 fOs.close();
                 Log.i("Thread", "Written to file " + temperature);
-                if (temperature < 35.0) {
-                    temperatureBelow();
-                }
             }
             catch (Exception e) {
                 Log.d("Write to file", e.toString());
