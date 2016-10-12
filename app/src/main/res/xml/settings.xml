@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/pref_user_profile" >
         <EditTextPreference
@@ -13,8 +14,7 @@
             android:defaultValue="false"
             android:key="prefAlertVibrate"
             android:summary="@string/pref_alert_summary"
-            android:persistent="true"
-            android:title="@string/pref_alert_title" >
+            android:persistent="true" >
         </CheckBoxPreference>
         <CheckBoxPreference
             android:defaultValue="false"
@@ -23,12 +23,25 @@
             android:persistent="true" >
         </CheckBoxPreference>
 
-        <!--<SeekBarPreference
-            android:dependency="Main_Option"
-            android:key="customPref"
-            android:defaultValue="32"
-            android:title="Custom Preference" />-->
-
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_update_setting2" >
+
+        <com.mbientlab.metawear.starter.SeekBarPreference
+            android:defaultValue="30"
+            android:key="tempAlert"
+            custom:seqText="temp"
+            android:persistent="true"
+            />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_update_setting3" >
+        <com.mbientlab.metawear.starter.SeekBarPreference
+            android:defaultValue="1"
+            android:key="tempFreq"
+            custom:seqText="alert"
+            android:persistent="true"/>
+    </PreferenceCategory>
+
 
 </PreferenceScreen>

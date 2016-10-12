@@ -89,7 +89,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
     private FragmentSettings settings;
     private MultiChannelTemperature mcTempModule;
     private List<MultiChannelTemperature.Source> tempSources;
-    private static final int RESULT_SETTINGS = 1;
     private SharedPreferences sharedPrefs;
     private SharedPreferences.OnSharedPreferenceChangeListener listener;
     private Timer timer;
@@ -259,8 +258,8 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
 
     public void showUserSettings() {
 
-        tempLimit = sharedPrefs.getFloat("", 30) - 30;
-        timeLimit = sharedPrefs.getInt("", 1) * 1000;
+        tempLimit = sharedPrefs.getFloat("tempAlert", 30) - 30;
+        timeLimit = sharedPrefs.getInt("tempFreq", 1) * 1000;
         vibrate = sharedPrefs.getBoolean("prefAlertVibrate", false);
         alert = sharedPrefs.getBoolean("prefAlertSound", false);
 
