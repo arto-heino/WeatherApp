@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/pref_user_profile" >
         <EditTextPreference
@@ -29,13 +30,16 @@
         <com.mbientlab.metawear.starter.SeekBarPreference
             android:defaultValue="30"
             android:key="tempAlert"
-            android:persistent="true"/>
+            custom:seqText="temp"
+            android:persistent="true"
+            />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_update_setting3" >
         <com.mbientlab.metawear.starter.SeekBarPreference
             android:defaultValue="1"
             android:key="tempFreq"
+            custom:seqText="alert"
             android:persistent="true"/>
     </PreferenceCategory>
 

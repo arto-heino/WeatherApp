@@ -19,7 +19,7 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
     private SeekBar mSeekBar2;
     private int mProgress;
     private TextView mProgressDisplay;
-    private TextView mProgressDisplay2;
+    private String seqText;
 
     public SeekBarPreference(Context context) {
 
@@ -34,17 +34,34 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
     public SeekBarPreference(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         setLayoutResource(R.layout.preference_seekbar);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TemperatureOptionsView,0,0);
+        seqText = a.getString(R.styleable.TemperatureOptionsView_seqText);
+        a.recycle();
     }
 
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
+
         mSeekBar = (SeekBar) view.findViewById(R.id.seekbar);
+
         mProgressDisplay = (TextView) view.findViewById(R.id.summary);
+
         mSeekBar.setMax(60);
         mSeekBar.setProgress(mProgress);
         mSeekBar.setOnSeekBarChangeListener(this);
-        mProgressDisplay.setText(String.valueOf(mProgress));
+
+        switch(seqText) {
+            case "alert":
+                mProgressDisplay.setText(String.valueOf(mProgress)+ " Seconds");
+                break;
+            case "temp":
+                mProgressDisplay.setText(String.valueOf(mProgress-30)+ " °C");
+                break;
+            default:
+                mProgressDisplay.setText(String.valueOf(mProgress));
+        }
+
     }
 
     @Override
