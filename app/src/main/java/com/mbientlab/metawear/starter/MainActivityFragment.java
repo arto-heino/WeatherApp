@@ -38,6 +38,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -53,6 +54,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -109,6 +111,8 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
     private static final String belowTemp = "belowTemp.text";
     private static final String separator = System.getProperty("line.separator");
 
+    private ImageView statusIcon;
+
 
 
     public MainActivityFragment() {
@@ -156,6 +160,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        statusIcon = (ImageView) getActivity().findViewById(R.id.imageView);
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
         showUserSettings();
 
@@ -168,6 +173,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
             }
         };
         sharedPrefs.registerOnSharedPreferenceChangeListener(listener);
+
 
     }
 
@@ -247,6 +253,10 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
         ((DeviceSetupActivity)getActivity()).setTempView();
     }
 
+    public void setStatusIcon(int status) {
+        ((DeviceSetupActivity)getActivity()).setStatusIcon(status);
+    }
+
     public void getLocation() {
         try {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
@@ -283,6 +293,8 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
                             tempMeasured.execute();
 
                             if(temperature < tempLimit){
+                                setStatusIcon(1);
+
                                 temperatureBelow();
                                 if(vibrate){
                                     Vibrator vib = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
@@ -297,6 +309,9 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
                                         e.printStackTrace();
                                     }
                                 }
+                            }
+                            else {
+                                setStatusIcon(0);
                             }
                         }
                     });

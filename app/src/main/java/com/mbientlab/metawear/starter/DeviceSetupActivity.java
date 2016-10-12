@@ -49,6 +49,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mbientlab.metawear.MetaWearBleService;
@@ -148,6 +149,7 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
         setContentView(R.layout.activity_device_setup);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setLogo(R.mipmap.weathermonitor);
 
         btDevice= getIntent().getParcelableExtra(EXTRA_BT_DEVICE);
         getApplicationContext().bindService(new Intent(this, MetaWearBleService.class), this, BIND_AUTO_CREATE);
@@ -212,6 +214,23 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
             public void run() {
                 TextView tempView = (TextView) findViewById(R.id.temperatureView);
                 tempView.setText(MainActivityFragment.sTemp);
+
+            }
+        });
+
+    }
+
+    public void setStatusIcon(int status) {
+        final int selector = status;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ImageView imgView = (ImageView) findViewById(R.id.imageView);
+                if(selector == 1) {
+                    imgView.setImageResource(R.mipmap.alertcircled);
+                } else {
+                    imgView.setImageResource(R.mipmap.checkmark);
+                }
 
             }
         });
