@@ -32,7 +32,7 @@ public class PagerAdapter extends FragmentPagerAdapter {
             case 1:
                 //SupportMapFragment mapFragment = (SupportMapFragment) fragm.findFragmentById(R.id.map);
                 //return mapFragment;
-                return MapFragmentActivity.newInstance(fragm, "");
+                return MapFragmentActivity.newInstance(fragm);
             default:
                 return new MainActivityFragment();
         }

@@ -38,19 +38,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.mbientlab.metawear.AsyncOperation;
 import com.mbientlab.metawear.Message;
 import com.mbientlab.metawear.MetaWearBleService;
@@ -61,15 +64,19 @@ import com.mbientlab.metawear.module.MultiChannelTemperature;
 import com.mbientlab.metawear.module.MultiChannelTemperature.*;
 
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
+
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment implements ServiceConnection {
+public class MainActivityFragment extends Fragment implements ServiceConnection, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
     }
@@ -83,9 +90,18 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     private SharedPreferences.OnSharedPreferenceChangeListener listener;
     private Timer timer;
     private GetTemperature getTemp;
-    private TextView tempView;
-
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+    private String mLatitudeText;
+    private String mLongitudeText;
+    private Float temperature;
     protected static String sTemp;
+
+    private static final String allTemp = "allTemp.text";
+    private static final String belowTemp = "belowTemp.text";
+    private static final String separator = System.getProperty("line.separator");
+
+
 
     public MainActivityFragment() {
     }
@@ -104,6 +120,15 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
 
         timer = new Timer();
         getTemp = new GetTemperature();
+        // Create an instance of GoogleAPIClient.
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this.getContext())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
     }
 
     @Override
@@ -123,8 +148,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        tempView = (TextView) getActivity().findViewById(R.id.temperatureView);
-        tempView.setText("jeje");
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
 
         showUserSettings();
@@ -180,6 +203,30 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
 
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+        super.onStart();
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+    }
+
+    public void onConnectionSuspended(int cause) {
+
+    }
+
+    public void onConnectionFailed(ConnectionResult result) {
+    }
+
     /**
      * Called when the app has reconnected to the board
      */
@@ -193,7 +240,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
         try {
             mcTempModule = mwBoard.getModule(MultiChannelTemperature.class);
             tempSources = mcTempModule.getSources();
-            timer.schedule(getTemp, 1000, 2000);
+            timer.schedule(getTemp, 1000, 10000);
 
             //ExtThermistor extTherm= (ExtThermistor) tempSources.get(MetaWearRChannel.EXT_THERMISTOR);
             //extTherm.configure((byte) 0, (byte) 1, false);
@@ -222,10 +269,28 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
         settingsTextView.setText(builder.toString());
     }
 
-
+    public void temperatureBelow() {
+        TempBelow tB = new TempBelow();
+        tB.execute();
+    }
 
     public void setTempView() {
         ((DeviceSetupActivity)getActivity()).setTempView();
+    }
+
+    public void getLocation() {
+        try {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);
+            if (mLastLocation != null) {
+                mLatitudeText = String.valueOf(mLastLocation.getLatitude());
+                mLongitudeText = String.valueOf(mLastLocation.getLongitude());
+                Log.i("Latitude", mLatitudeText);
+                Log.i("Longitude", mLongitudeText);
+            }
+        } catch (SecurityException e){
+            Log.getStackTraceString(e);
+        }
     }
 
     private class GetTemperature extends TimerTask {
@@ -243,10 +308,13 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
 
                             Log.i("Temperature", String.format("%.3fC",
                                     msg.getData(Float.class)));
-                            temp = String.format("%.3fC",
+                            temp = String.format("%.1f°C",
                                     msg.getData(Float.class));
                             sTemp = temp;
                             setTempView();
+                            temperature = msg.getData(Float.class);
+                            TempMeasured tempMeasured = new TempMeasured();
+                            tempMeasured.execute();
                         }
                     });
 
@@ -254,6 +322,53 @@ public class MainActivityFragment extends Fragment implements ServiceConnection 
                     mcTempModule.readTemperature(tempSources.get(MultiChannelTemperature.MetaWearRChannel.NRF_DIE));
                 }
             });
+        }
+    }
+
+    private class TempMeasured extends AsyncTask<Void, Void, Void> {
+
+        public Void doInBackground(Void... params) {
+            try {
+                FileOutputStream fOs = getActivity().openFileOutput(allTemp, Context.MODE_APPEND);
+                OutputStreamWriter oSw = new OutputStreamWriter(fOs);
+                BufferedWriter bw = new BufferedWriter(oSw);
+                bw.write(String.format("%.1f°C", temperature));
+                bw.write(separator);
+                bw.flush();
+                bw.close();
+                oSw.close();
+                fOs.close();
+                Log.i("Thread", "Written to file " + temperature);
+                if (temperature < 35.0) {
+                    temperatureBelow();
+                }
+            }
+            catch (Exception e) {
+                Log.d("Write to file", e.toString());
+            }
+            return null;
+        }
+    }
+
+    private class TempBelow extends AsyncTask<Void, Void, Void> {
+
+        public Void doInBackground(Void... params) {
+            getLocation();
+            try {
+                FileOutputStream fOs = getActivity().openFileOutput(belowTemp, Context.MODE_APPEND);
+                OutputStreamWriter oSw = new OutputStreamWriter(fOs);
+                BufferedWriter bw = new BufferedWriter(oSw);
+                bw.write(String.format("%.1f°C", temperature)+":"+mLatitudeText+":"+mLongitudeText);
+                bw.write(separator);
+                bw.flush();
+                bw.close();
+                oSw.close();
+                fOs.close();
+            }
+            catch (Exception e) {
+                Log.d("Write to file", e.toString());
+            }
+            return null;
         }
     }
 }
