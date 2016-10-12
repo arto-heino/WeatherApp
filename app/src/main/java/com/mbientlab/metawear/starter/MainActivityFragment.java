@@ -245,7 +245,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
         try {
             mcTempModule = mwBoard.getModule(MultiChannelTemperature.class);
             tempSources = mcTempModule.getSources();
-            timer.schedule(getTemp, 1000, timeLimit);
 
             //ExtThermistor extTherm= (ExtThermistor) tempSources.get(MetaWearRChannel.EXT_THERMISTOR);
             //extTherm.configure((byte) 0, (byte) 1, false);
@@ -262,6 +261,8 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
         timeLimit = sharedPrefs.getInt("tempFreq", 1) * 1000;
         vibrate = sharedPrefs.getBoolean("prefAlertVibrate", false);
         alert = sharedPrefs.getBoolean("prefAlertSound", false);
+
+        timer.schedule(getTemp, 1000, timeLimit);
 
     }
 
