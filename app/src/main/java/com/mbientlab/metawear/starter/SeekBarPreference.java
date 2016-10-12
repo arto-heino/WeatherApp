@@ -53,7 +53,8 @@ public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
 
         switch(seqText) {
             case "alert":
-                mProgressDisplay.setText(String.valueOf(mProgress)+ " Seconds");
+                mProgressDisplay.setText(String.valueOf(mProgress+1)+ " Seconds");
+                mSeekBar.setMax(59);
                 break;
             case "temp":
                 mProgressDisplay.setText(String.valueOf(mProgress-30)+ " °C");

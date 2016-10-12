@@ -97,7 +97,6 @@ public class MapFragmentActivity extends Fragment implements OnMapReadyCallback 
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             do {
                 line = bRx.readLine();
-                Log.i("Line", line);
                 String[] markerData = line.split(":");
                 String temp = markerData[0];
                 Double lat = Double.parseDouble(markerData[1]);

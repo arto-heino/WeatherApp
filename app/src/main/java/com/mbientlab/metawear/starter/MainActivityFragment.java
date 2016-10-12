@@ -97,10 +97,13 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
     private Location mLastLocation;
     private String mLatitudeText;
     private String mLongitudeText;
-    private Float tempLimit, temperature;
-    private Integer timeLimit;
+    private Float temperature;
+    private Integer timeLimit, tempLimit;
     private Boolean alert, vibrate;
     protected static String sTemp;
+    private boolean hasStarted = false;
+    private ComponentName name;
+    private IBinder service;
 
     private static final String allTemp = "allTemp.text";
     private static final String belowTemp = "belowTemp.text";
@@ -154,51 +157,25 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
-
         showUserSettings();
 
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 showUserSettings();
+                getTemp.cancel();
+                getTemp = new GetTemperature();
+                timer.schedule(getTemp, 1000, timeLimit);
             }
         };
-
         sharedPrefs.registerOnSharedPreferenceChangeListener(listener);
-        
-        /*view.findViewById(R.id.acc_start).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mcTempModule.routeData()
-                        .fromSource(tempSources.get(MultiChannelTemperature.MetaWearRChannel.NRF_DIE)).stream("temp_nrf_stream")
-                        .commit().onComplete(new AsyncOperation.CompletionHandler<RouteManager>() {
 
-                    public void success(RouteManager result) {
-                        result.subscribe("temp_nrf_stream", new RouteManager.MessageHandler() {
-                            @Override
-                            public void process(Message msg) {
-
-                                Log.i("Temperature", String.format("%.3fC",
-                                        msg.getData(Float.class)));
-                            }
-                        });
-
-                        // Read temperature from the NRF soc chip
-                        mcTempModule.readTemperature(tempSources.get(MultiChannelTemperature.MetaWearRChannel.NRF_DIE));
-                    }
-                });
-            }
-        });*/
-        /*view.findViewById(R.id.acc_stop).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mwBoard.removeRoutes();
-            }
-        });*/
     }
 
 
     @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
+    public void onServiceConnected(ComponentName cname, IBinder iservice) {
+        name = cname;
+        service = iservice;
         mwBoard = ((MetaWearBleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
         ready();
     }
@@ -245,9 +222,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
         try {
             mcTempModule = mwBoard.getModule(MultiChannelTemperature.class);
             tempSources = mcTempModule.getSources();
-
-            //ExtThermistor extTherm= (ExtThermistor) tempSources.get(MetaWearRChannel.EXT_THERMISTOR);
-            //extTherm.configure((byte) 0, (byte) 1, false);
+            timer.schedule(getTemp, 1000, timeLimit);
 
         } catch (UnsupportedModuleException e) {
             Snackbar.make(getActivity().findViewById(R.id.device_setup_fragment), e.getMessage(),
@@ -257,13 +232,10 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
 
     public void showUserSettings() {
 
-        tempLimit = sharedPrefs.getFloat("tempAlert", 30) - 30;
-        timeLimit = sharedPrefs.getInt("tempFreq", 1) * 1000;
+        tempLimit = sharedPrefs.getInt("tempAlert", 30) - 30;
+        timeLimit = (sharedPrefs.getInt("tempFreq", 1) + 1) * 1000;
         vibrate = sharedPrefs.getBoolean("prefAlertVibrate", false);
         alert = sharedPrefs.getBoolean("prefAlertSound", false);
-
-        timer.schedule(getTemp, 1000, timeLimit);
-
     }
 
     public void temperatureBelow() {
@@ -282,8 +254,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
             if (mLastLocation != null) {
                 mLatitudeText = String.valueOf(mLastLocation.getLatitude());
                 mLongitudeText = String.valueOf(mLastLocation.getLongitude());
-                Log.i("Latitude", mLatitudeText);
-                Log.i("Longitude", mLongitudeText);
             }
         } catch (SecurityException e){
             Log.getStackTraceString(e);
@@ -294,6 +264,7 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
         private String temp;
         @Override
         public void run() {
+            hasStarted = true;
             mcTempModule.routeData()
                     .fromSource(tempSources.get(MultiChannelTemperature.MetaWearRChannel.NRF_DIE)).stream("temp_nrf_stream")
                     .commit().onComplete(new AsyncOperation.CompletionHandler<RouteManager>() {
@@ -302,9 +273,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
                     result.subscribe("temp_nrf_stream", new RouteManager.MessageHandler() {
                         @Override
                         public void process(Message msg) {
-
-                            Log.i("Temperature", String.format("%.3fC",
-                                    msg.getData(Float.class)));
                             temp = String.format("%.1f°C",
                                     msg.getData(Float.class));
                             sTemp = temp;
@@ -353,7 +321,6 @@ public class MainActivityFragment extends Fragment implements ServiceConnection,
                 bw.close();
                 oSw.close();
                 fOs.close();
-                Log.i("Thread", "Written to file " + temperature);
             }
             catch (Exception e) {
                 Log.d("Write to file", e.toString());

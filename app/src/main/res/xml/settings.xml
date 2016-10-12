@@ -37,7 +37,7 @@
 
     <PreferenceCategory android:title="@string/pref_update_setting3" >
         <com.mbientlab.metawear.starter.SeekBarPreference
-            android:defaultValue="1"
+            android:defaultValue="0"
             android:key="tempFreq"
             custom:seqText="alert"
             android:persistent="true"/>
